@@ -2,12 +2,16 @@
 
 <p align="center">
 	<img src="https://img.shields.io/badge/Swift-5.2-orange.svg" />
+	<img src="https://img.shields.io/badge/SwiftkubeClient-0.1.0-blue.svg" />
 	<img src="https://img.shields.io/badge/platforms-mac+linux-brightgreen.svg?style=flat" alt="Mac + Linux" />
 </p>
 
 ## Overview
 
-An example  Kubernetes CLI using [SwiftkubeClient](https://github.com/swiftkube/client) implementing a tiny subset of the functionality for demo purposes. The implemented API mimicks `kubectl` .
+An example  Kubernetes CLI using [SwiftkubeClient](https://github.com/swiftkube/client) implementing a tiny subset of the functionality for demo purposes.
+
+This example demonstrates using [SwiftkubeClient](https://github.com/swiftkube/client) and [SwiftkubeModel](https://github.com/swiftkube/model) to communicate with API server.
+The implemented API mimicks `kubectl` .
 
 ## Showcases
 
@@ -18,6 +22,8 @@ An example  Kubernetes CLI using [SwiftkubeClient](https://github.com/swiftkube/
   - [x] `ConfigMaps` via `--from-literal` and `--from-file`
   - [x] `Deployments` with a given `image`
 - [x] Apply object manifests from a file
+
+`SwiftkubeClient`  detects the current local `kubeconfig` automatically, i.e. if you've got a `kubeconfig` under `~/.kube/config` it will be picked up and used for all `swiftkubectl` calls.
 
 ## Usage
 
