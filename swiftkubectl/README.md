@@ -15,8 +15,8 @@ An example  Kubernetes CLI using [SwiftkubeClient](https://github.com/swiftkube/
   - [x] by name in a given namespace
   - [x] list objects in all namespaces
 - [x] Create Kubernetes objects
- - [x] `ConfigMaps` via `--from-literal` and `--from-file`
- - [x] `Deployments` with a given `image`
+  - [x] `ConfigMaps` via `--from-literal` and `--from-file`
+  - [x] `Deployments` with a given `image`
 - [x] Apply object manifests from a file
 
 ## Usage
