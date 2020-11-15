@@ -58,7 +58,7 @@ final class Apply: ParsableCommand {
 	}
 
 	private func applyResource(client: KubernetesClient, resource: AnyKubernetesAPIResource) {
-		guard let gvk = try? GroupVersionKind(string: "\(resource.apiVersion)/\(resource.kind)") else {
+		guard let gvk = try? GroupVersionKind(forName: "\(resource.apiVersion)/\(resource.kind)") else {
 			print("Unknown Kubernetes resource [\(resource.apiVersion)/\(resource.kind)]")
 			return
 		}

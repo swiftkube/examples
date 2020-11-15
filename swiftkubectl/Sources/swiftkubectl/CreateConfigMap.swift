@@ -115,7 +115,7 @@ final class CreateConfigMap: ParsableCommand {
 		}
 
 		// Create the ConfigMap in the given namespace
-		let res = try client.configMaps.create(inNamespace: namespace, configMap).wait()
+		let res = try client.configMaps.create(inNamespace: .namespace(namespace ?? client.config.namespace), configMap).wait()
 		print("ConfigMap \(name) created in namespace \(res.metadata!.namespace!)")
 	}
 }

@@ -6,8 +6,9 @@ import PackageDescription
 let package = Package(
 	name: "swiftkubectl",
 	dependencies: [
+		// .package(name: "SwiftkubeClient", url: "https://github.com/swiftkube/client.git", from: "0.1.0"),
 		.package(name: "SwiftkubeClient", path: "../../client"),
-		.package(url: "https://github.com/apple/swift-argument-parser", .upToNextMinor(from: "0.3.0"))
+		.package(name: "swift-argument-parser", url: "https://github.com/apple/swift-argument-parser", .upToNextMinor(from: "0.3.0"))
 	],
 	targets: [
 		.target(

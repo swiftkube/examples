@@ -72,7 +72,7 @@ final class CreateDeploynet: ParsableCommand {
 		}
 
 		// Create the Deployment in the given namespace
-		let res = try client.appsV1.deployments.create(inNamespace: namespace, deployment).wait()
+		let res = try client.appsV1.deployments.create(inNamespace: .namespace(namespace ?? client.config.namespace), deployment).wait()
 		print("Deployment \(name) created in namespace \(res.metadata!.namespace!)")
 	}
 }
