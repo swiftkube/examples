@@ -34,7 +34,7 @@ extension Application {
 	}
 
 	func initKubernetesClient() {
-		self.kubernetesClient = KubernetesClient()!
+		self.kubernetesClient = KubernetesClient(logger: logger)!
 	}
 }
 
