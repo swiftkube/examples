@@ -1,0 +1,28 @@
+#define(content):
+<table class="table is-narrow is-striped is-hoverable is-fullwidth">
+	<thead>
+		<tr>
+			<th>Name</th>
+			<th>Namespace</th>
+			<th>Ready</th>
+			<th>Available</th>
+			<th>Age</th>
+		</tr>
+	</thead>
+	<tbody>
+		#for(deployment in deployments):
+		<tr>
+			<td>
+				<a class="button is-info is-light is-rounded" href="/deployments/#(deployment.namespace)/#(deployment.name)">#(deployment.name)</a>
+			</td>
+			<td>#(deployment.namespace)</td>
+			<td>#(deployment.ready)</td>
+			<td>#(deployment.available)</td>
+			<td>#(deployment.age)</td>
+		</tr>
+		#endfor
+	</tbody>
+</table>
+#enddefine
+
+#inline("index")

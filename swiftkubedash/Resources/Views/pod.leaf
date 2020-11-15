@@ -1,0 +1,78 @@
+#define(content):
+<div id="pod-content" class="card">
+	<header class="card-header">
+		<a href="javascript:history.back()" class="card-header-icon">
+			<span class="icon">
+				<i class="fas fa-chevron-left" aria-hidden="true"></i>
+			</span>
+		</a>
+		<p class="card-header-title">
+			#(pod.name)
+		</p>
+	</header>
+	<div class="card-content">
+		<div class="content">
+			<table class="table is-narrow is-fullwidth">
+				<thead>
+					<tr>
+						<th>Namespace</th>
+						<th>Phase</th>
+						<th>Age</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>#(pod.namespace)</td>
+						<td>#(pod.phase)</td>
+						<td>#(pod.age)</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div class="content">
+			<h5 class="title is-5">Containers</h5>
+			#for(container in pod.containers):
+				<article class="message #(container.stateColor)">
+					<div class="message-header">
+						#(container.name)
+					</div>
+					<div class="message-body">
+						<div class="columns">
+							<div class="column">
+								<strong>Image</strong>
+							</div>
+							<div class="column">
+								<strong>State</strong>
+							</div>
+							<div class="column">
+								<strong>Restart Count</strong>
+							</div>
+						</div>
+						<div class="columns">
+							<div class="column">
+								#(container.image)
+							</div>
+							<div class="column">
+								#(container.state)
+							</div>
+							<div class="column">
+								#(container.restartCount)
+							</div>
+						</div>
+						<div class="columns">
+							<div class="column">
+								<button class="button is-rounded" onclick="followLogs('#(pod.namespace)', '#(pod.name)', '#(container.name)')">Follow Logs</button>
+							</div>
+						</div>
+					</div>
+				</article>
+			#endfor
+		</div>
+	</div>
+	<div class="field">
+		<div id="pod-logs" class="box" style="display: none; overflow-y: auto; height:400px; width: 100%;"></textarea>
+	</div>
+</div>
+#enddefine
+
+#inline("index")

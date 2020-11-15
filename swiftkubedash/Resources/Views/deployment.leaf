@@ -1,0 +1,62 @@
+#define(content):
+<div id="pod-content" class="card">
+	<header class="card-header">
+		<a href="javascript:history.back()" class="card-header-icon">
+			<span class="icon">
+				<i class="fas fa-chevron-left" aria-hidden="true"></i>
+			</span>
+		</a>
+		<p class="card-header-title">
+			#(deployment.name)
+		</p>
+	</header>
+	<div class="card-content">
+		<div class="content">
+			<table class="table is-narrow is-fullwidth">
+				<thead>
+					<tr>
+						<th>Namespace</th>
+						<th>Ready</th>
+						<th>Available</th>
+						<th>Age</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>#(deployment.namespace)</td>
+						<td>#(deployment.ready)</td>
+						<td>#(deployment.available)</td>
+						<td>#(deployment.age)</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div class="content">
+			<table class="table is-narrow is-fullwidth">
+				<thead>
+					<tr>
+						<th>Labels</th>
+						<th>Selectors</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>
+							#for(label in deployment.labels):
+							<span class="tag is-info is-light">#(label)</span>
+							#endfor
+						</td>
+						<td>
+							#for(sel in deployment.selectors):
+							<span class="tag is-info is-light">#(sel)</span>
+							#endfor
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+#enddefine
+
+#inline("index")

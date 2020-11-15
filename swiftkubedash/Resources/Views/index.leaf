@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Swiftkube Dash</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.1/css/bulma.min.css" 
+			integrity="sha512-ZRv40llEogRmoWgZwnsqke3HNzJ0kiI0+pcMgiz2bxO6Ew1DVBtWjVn0qjrXdT3+u+pSN36gLgmJiiQ3cQtyzA==" 
+			crossorigin="anonymous" />
+		<link rel="stylesheet" href="/css/app.css">
+		<script defer src="https://use.fontawesome.com/releases/v5.14.0/js/all.js"></script>
+		<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.min.js"
+			integrity="sha512-GoORoNnxst42zE3rYPj4bNBm0Q6ZRXKNH2D9nEmNvVF/z24ywVnijAWVi/09iBiVDQVf3UlZHpzhAJIdd9BXqw=="
+			crossorigin="anonymous"></script> -->
+			
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js" 
+			integrity="sha512-GZ1RIgZaSc8rnco/8CXfRdCpDxRCphenIiZ2ztLy3XQfCbQUSCuk8IudvNHxkRA3oUg6q0qejgN/qqyG1duv5Q==" 
+			crossorigin="anonymous"></script>
+
+	</head>
+<body>
+	<div id="app">
+		<nav class="navbar" role="navigation" aria-label="main navigation">
+			<div class="navbar-brand">
+				<a class="navbar-item" href="/">Swiftkube Dash</a>
+				<a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+					<span aria-hidden="true"></span>
+					<span aria-hidden="true"></span>
+					<span aria-hidden="true"></span>
+				</a>
+			</div>
+
+			<div class="navbar-end">
+				<div class="navbar-item">
+					<div class="buttons">
+						<a class="button is-primary" onclick="openModal()">
+							<strong>Create Object</strong>
+						</a>
+					</div>
+				</div>
+			</div>
+		</nav>
+
+		<div class="columns" style="margin: 10px;">
+			<div class="column is-2">
+				<aside class="menu">
+					<p class="menu-label">Workloads</p>
+					<ul class="menu-list ">
+						<li><a href="/deployments" class=#if(selected == "deployments"): "is-active" #else: "" #endif>Deployments</a></li>
+						<li><a href="/pods" class=#if(selected == "pods"): "is-active" #else: "" #endif>Pods</a></li>
+					</ul>
+				</aside>
+			</div>
+			<div class="column">
+				#content()
+			</div>
+		</div>
+		
+		<div id="modal" class="modal">
+			<div class="modal-background"></div>
+			<div class="modal-card">
+				<header class="modal-card-head">
+					<p class="modal-card-title">Create Object</p>
+				</header>
+				<form id="create-object-form">
+					<section class="modal-card-body">
+						<div class="field">
+							<label class="label">Namespace</label>
+							<div class="control">
+								<input id="object-namespace" class="input" type="text" placeholder="Namespace" value="default">
+							</div>
+						</div>
+						<div class="field">
+							<label class="label">Manifest</label>
+							<div id="object-yaml-editor" class="textarea has-fixed-size"></div>
+						</div>
+					</section>
+					<footer class="modal-card-foot">
+						<div class="field is-grouped">
+							<p class="control">
+								<button class="button is-primary" type="submit">Create</a>
+							</p>
+							<p class="control">
+								<button class="button is-light" type="reset" onclick="cancelModal()">Cancel</a>
+							</p>
+						</div>
+					</footer>
+				</form>
+			</div>
+		</div>
+
+		<div id="toast" class="column is-3" style="display: none;">
+			<article id="toast-message" class="message">
+				<div class="message-header">
+					<p></p>
+					<button class="delete" aria-label="delete" onclick="closeToast()"></button>
+				</div>
+				<div class="message-body"></div>
+			</article>
+		</div>
+	</div>
+
+	<script src="/js/app.js"></script>
+</body>
+</html>

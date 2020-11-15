@@ -1,0 +1,26 @@
+#define(content):
+<table class="table is-narrow is-striped is-hoverable is-fullwidth">
+	<thead>
+		<tr>
+			<th>Name</th>
+			<th>Namespace</th>
+			<th>Phase</th>
+			<th>Age</th>
+		</tr>
+	</thead>
+	<tbody>
+		#for(pod in pods):
+		<tr>
+			<td>
+				<a class="button is-info is-light is-rounded" href="/pods/#(pod.namespace)/#(pod.name)">#(pod.name)</a>
+			</td>
+			<td>#(pod.namespace)</td>
+			<td>#(pod.phase)</td>
+			<td>#(pod.age)</td>
+		</tr>
+		#endfor
+	</tbody>
+</table>
+#enddefine
+
+#inline("index")

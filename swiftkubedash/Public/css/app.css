@@ -1,0 +1,43 @@
+body {
+	display: flex;
+	min-height: 100vh;
+	flex-direction: column;
+}
+
+#app {
+	flex: 1;
+}
+
+#toast {
+  position: absolute;
+  right: 50px;
+  bottom: 50px;
+  z-index: 100;
+}
+
+#pod-logs {
+	background-color: #07293C;
+	color: white;
+	display: none;
+	overflow-y: auto;
+	height:400px;
+	width: 100%;
+}
+
+#object-yaml-editor {
+	height: 250px;
+}
+
+.table th:not([align]) {
+	text-align: left;
+}
+
+.card .table th:not([align]) {
+	text-align: left;
+}
+
+.preformatted {
+	font-family: monospace;
+	white-space: pre-wrap;
+	word-wrap: break-word;
+}
