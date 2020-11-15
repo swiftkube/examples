@@ -57,7 +57,7 @@ $ docker build . -t <image>
 $ docker run -v $HOME/.kube/config:/app/.kube/config -p 8080:8080 <image> 
 ```
 
-### Kkubernetes
+### Kubernetes
 
 You can deploy the docker image in Kubernetes. The app will configure itself with the mounted service-account and namespace.
 
