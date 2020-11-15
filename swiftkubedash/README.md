@@ -23,6 +23,13 @@ A miny example dashboard using [SwiftkubeClient](https://github.com/swiftkube/cl
 
 :information_source: The app tries to determine the kubeconfig automatically so a valid config should be available at the correct location.
 
+:information_source: The following permissions are required:
+
+- List and Get deployments in all namespaces
+- List and Get pods in all namespaces
+- Create Resources in all namespaces
+
+
 To try this just clone this repository and then depending on the environment:
 
 ```bash
@@ -54,26 +61,12 @@ $ docker run -v $HOME/.kube/config:/app/.kube/config -p 8080:8080 <image>
 
 You can deploy the docker image in Kubernetes. The app will configure itself with the mounted service-account and namespace.
 
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: swiftkube-dash
-  labels:
-    app: swiftkube-dash
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: swiftkube-dash
-  template:
-    metadata:
-      labels:
-        app: swiftkube-dash
-    spec:
-      containers:
-      - name: swiftkube-dash
-        image: swiftkubedash
-        ports:
-        - containerPort: 8080
+:warning: Review the manifests before applying random stuff into your cluster.
+
+You can apply the manifests in the `deploy` folder:
+
+```bash
+kubectl apply -f ./deploy
 ```
+
+This will create a deployment, configured with a service-account and a cluster-role, and a service of type `ClusterIP`. You can acces it like usual, e.g. a public ingress, port-forward .. etc.
