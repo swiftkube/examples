@@ -7,7 +7,7 @@ let package = Package(
 		.macOS(.v10_15)
 	],
 	dependencies: [
-		.package(name: "SwiftkubeClient", path: "../../client"),
+		.package(name: "SwiftkubeClient", url: "https://github.com/swiftkube/client.git", from: "0.1.0"),
 		.package(url: "https://github.com/vapor/vapor.git", from: "4.0.0"),
 		.package(url: "https://github.com/vapor/leaf", from: "4.0.0-tau.1"),
 	],
