@@ -12,12 +12,12 @@ A miny example dashboard using [SwiftkubeClient](https://github.com/swiftkube/cl
 
 ## Screenshots
 
-![Deployments](./screenshots/deployments.png)
-![Deployment](./screenshots/one-deployment.png)
-![Pods](./screenshots/pods.png)
-![Pod](./screenshots/one-pod.png)
-![Logs](./screenshots/logs.png)
-![Create](./screenshots/create-object.png)
+![Deployments](./Screenshots/deployments.png)
+![Deployment](./Screenshots/one-deployment.png)
+![Pods](./Screenshots/pods.png)
+![Pod](./Screenshots/one-pod.png)
+![Logs](./Screenshots/logs.png)
+![Create](./Screenshots/create-object.png)
 
 ## Usage
 
