@@ -19,5 +19,7 @@ spec:
       containers:
       - name: swiftkube-dash
         image: iabudiab/swiftkubedash:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
+
