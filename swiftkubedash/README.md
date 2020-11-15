@@ -65,6 +65,8 @@ You can deploy the docker image in Kubernetes. The app will configure itself wit
 
 You can apply the manifests in the `deploy` folder:
 
+:warning: If you deploy in any namespace other than `default`, then you have to change the subject's namesace in the [ClusterRoleBinding](./deploy/rbac.yaml)
+
 ```bash
 kubectl apply -f ./deploy
 ```
