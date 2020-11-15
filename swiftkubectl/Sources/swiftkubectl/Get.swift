@@ -15,6 +15,7 @@
 //
 
 import ArgumentParser
+import Foundation
 import NIO
 import SwiftkubeModel
 import SwiftkubeClient
@@ -50,6 +51,7 @@ struct Get: ParsableCommand {
 	var allNamespaces: Bool = false
 
 	func run() throws {
+		// Initialize a new KubernetesClient
 		guard let client = KubernetesClient(provider: .shared(MultiThreadedEventLoopGroup(numberOfThreads: 1))) else {
 			throw SwiftkubectlError.configError("Error initializing client")
 		}
@@ -60,11 +62,17 @@ struct Get: ParsableCommand {
 
 		let namespaceSelector = resolveNamespace() ?? NamespaceSelector.namespace(client.config.namespace)
 
+		// Determine the GroupVersionKind
+		guard let gvk = try? GroupVersionKind(forName: kind) else {
+			throw SwiftkubectlError.commandError("Unknown object kind: \(kind)")
+		}
+		JSONDecoder().dateDecodingStrategy = .iso8601
+		// Get or List resources
 		let resources: [MetadataHavingResource]
 		if let name = name {
-			resources = try getResource(client, in: namespaceSelector, name: name)
+			resources = try getResource(client, gvk: gvk, in: namespaceSelector, name: name)
 		} else {
-			resources = try listResources(client, in: namespaceSelector)
+			resources = try listResources(client, gvk: gvk, in: namespaceSelector)
 		}
 
 		if resources.isEmpty {
@@ -72,14 +80,12 @@ struct Get: ParsableCommand {
 			return
 		}
 
-		output(resources: resources)
+		// Print results
+		output(resources: resources, gvk: gvk)
 	}
 
-	private func getResource(_ client: KubernetesClient, in namespaceSelector: NamespaceSelector, name: String) throws -> [MetadataHavingResource] {
-		guard let gvk = try? GroupVersionKind(forName: kind) else {
-			throw SwiftkubectlError.commandError("Unknown object kind: \(kind)")
-		}
-
+	private func getResource(_ client: KubernetesClient, gvk: GroupVersionKind, in namespaceSelector: NamespaceSelector, name: String) throws -> [MetadataHavingResource] {
+		// Use a generic client for the given GroupVersionKind
 		let resource = try client.for(gvk: gvk)
 			.get(in: gvk.namespaced ? namespaceSelector : .allNamespaces, name: name)
 			.wait()
@@ -87,11 +93,8 @@ struct Get: ParsableCommand {
 		return [resource]
 	}
 
-	private func listResources(_ client: KubernetesClient, in namespaceSelector: NamespaceSelector) throws -> [MetadataHavingResource] {
-		guard let gvk = try? GroupVersionKind(forName: kind) else {
-			throw SwiftkubectlError.commandError("Unknown object kind: \(kind)")
-		}
-
+	private func listResources(_ client: KubernetesClient, gvk: GroupVersionKind, in namespaceSelector: NamespaceSelector) throws -> [MetadataHavingResource] {
+		// Use a generic client for the given GroupVersionKind
 		return try client.for(gvk: gvk)
 			.list(in: gvk.namespaced ? namespaceSelector : .allNamespaces)
 			.wait()
@@ -109,19 +112,41 @@ struct Get: ParsableCommand {
 		}
 	}
 
-	private func output(resources: [MetadataHavingResource]) {
-		print(
-			kind.uppercased().padding(toLength: 40, withPad: " ", startingAt: 0),
-			"NAMESPACE".padding(toLength: 16, withPad: " ", startingAt: 0),
-			"CREATED AT".padding(toLength: 20, withPad: " ", startingAt: 0)
-		)
+	// Sample ouput
+	private func output(resources: [MetadataHavingResource], gvk: GroupVersionKind) {
+		let formatter = ISO8601DateFormatter()
+		formatter.formatOptions = .withInternetDateTime
 
-		resources.forEach { resource in
+		if gvk.namespaced {
 			print(
-				resource.name!.padding(toLength: 40, withPad: " ", startingAt: 0),
-				resource.metadata!.namespace!.padding(toLength: 16, withPad: " ", startingAt: 0),
-				resource.metadata!.creationTimestamp!.padding(toLength: 20, withPad: " ", startingAt: 0)
+				kind.uppercased().padding(toLength: 40, withPad: " ", startingAt: 0),
+				"NAMESPACE".padding(toLength: 16, withPad: " ", startingAt: 0),
+				"CREATED AT".padding(toLength: 20, withPad: " ", startingAt: 0)
 			)
+
+			resources.forEach { resource in
+				let date = formatter.string(from: resource.metadata!.creationTimestamp!)
+
+				print(
+					resource.name!.padding(toLength: 40, withPad: " ", startingAt: 0),
+					resource.metadata!.namespace!.padding(toLength: 16, withPad: " ", startingAt: 0),
+					date.padding(toLength: 20, withPad: " ", startingAt: 0)
+				)
+			}
+		} else {
+			print(
+				kind.uppercased().padding(toLength: 40, withPad: " ", startingAt: 0),
+				"CREATED AT".padding(toLength: 20, withPad: " ", startingAt: 0)
+			)
+
+			resources.forEach { resource in
+				let date = formatter.string(from: resource.metadata!.creationTimestamp!)
+
+				print(
+					resource.name!.padding(toLength: 40, withPad: " ", startingAt: 0),
+					date.padding(toLength: 20, withPad: " ", startingAt: 0)
+				)
+			}
 		}
 	}
 }

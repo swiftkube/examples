@@ -35,7 +35,7 @@ final class Apply: ParsableCommand {
 
 	func run() throws {
 		// Initialize a new KubernetesClient
-		guard let client = KubernetesClient(provider: .shared(MultiThreadedEventLoopGroup(numberOfThreads: 1))) else {
+		guard let client = KubernetesClient() else {
 			throw SwiftkubectlError.configError("Error initializing client")
 		}
 
