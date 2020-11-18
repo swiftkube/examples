@@ -8,7 +8,7 @@
 
 ## Overview
 
-A miny example dashboard using [SwiftkubeClient](https://github.com/swiftkube/client) on [Vapor](https://github.com/vaopr/vapor).
+A miny example dashboard using [SwiftkubeClient](https://github.com/swiftkube/client) on [Vapor](https://github.com/vapor/vapor).
 
 ## Screenshots
 
