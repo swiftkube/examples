@@ -63,7 +63,7 @@ struct Get: ParsableCommand {
 		let namespaceSelector = resolveNamespace() ?? NamespaceSelector.namespace(client.config.namespace)
 
 		// Determine the GroupVersionKind
-		guard let gvk = try? GroupVersionKind(forName: kind) else {
+		guard let gvk = try? GroupVersionKind(for: kind) else {
 			throw SwiftkubectlError.commandError("Unknown object kind: \(kind)")
 		}
 		JSONDecoder().dateDecodingStrategy = .iso8601
@@ -119,7 +119,7 @@ struct Get: ParsableCommand {
 
 		if gvk.namespaced {
 			print(
-				kind.uppercased().padding(toLength: 40, withPad: " ", startingAt: 0),
+				gvk.kind.uppercased().padding(toLength: 40, withPad: " ", startingAt: 0),
 				"NAMESPACE".padding(toLength: 16, withPad: " ", startingAt: 0),
 				"CREATED AT".padding(toLength: 20, withPad: " ", startingAt: 0)
 			)
@@ -135,7 +135,7 @@ struct Get: ParsableCommand {
 			}
 		} else {
 			print(
-				kind.uppercased().padding(toLength: 40, withPad: " ", startingAt: 0),
+				gvk.kind.uppercased().padding(toLength: 40, withPad: " ", startingAt: 0),
 				"CREATED AT".padding(toLength: 20, withPad: " ", startingAt: 0)
 			)
 
