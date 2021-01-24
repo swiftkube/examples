@@ -89,7 +89,7 @@ func routes(_ app: Application) throws {
 			return req.eventLoop.makeFailedFuture(Abort(.custom(code: 400, reasonPhrase: "Payload is not a valid manifest")))
 		}
 
-		guard let gvk = try? GroupVersionKind(forName: "\(resource.apiVersion)/\(resource.kind)") else {
+		guard let gvk = try? GroupVersionKind(for: "\(resource.apiVersion)/\(resource.kind)") else {
 			return req.eventLoop.makeFailedFuture(Abort(.custom(code: 400, reasonPhrase: "Unknown resource: \(resource.apiVersion)/\(resource.kind)")))
 		}
 
