@@ -7,9 +7,10 @@ let package = Package(
 		.macOS(.v10_15)
 	],
 	dependencies: [
-		.package(name: "SwiftkubeClient", url: "https://github.com/swiftkube/client.git", from: "0.4.0"),
-		.package(url: "https://github.com/vapor/vapor.git", from: "4.0.0"),
-		.package(url: "https://github.com/vapor/leaf", from: "4.0.0-tau.1"),
+		.package(name: "SwiftkubeClient", url: "https://github.com/swiftkube/client.git", from: "0.9.0"),
+		.package(url: "https://github.com/vapor/vapor.git", from: "4.45.0"),
+		.package(url: "https://github.com/vapor/leaf", from: "4.1.0"),
+		.package(url: "https://github.com/MrLotU/SwiftPrometheus.git", from: "1.0.0-alpha.11")
 	],
 	targets: [
 		.target(
@@ -17,7 +18,8 @@ let package = Package(
 			dependencies: [
 				.product(name: "SwiftkubeClient", package: "SwiftkubeClient"),
 				.product(name: "Vapor", package: "vapor"),
-				.product(name: "Leaf", package: "leaf")
+				.product(name: "Leaf", package: "leaf"),
+				.product(name: "SwiftPrometheus", package: "SwiftPrometheus"),
 			],
 			swiftSettings: [
 				.unsafeFlags(["-cross-module-optimization"], .when(configuration: .release))

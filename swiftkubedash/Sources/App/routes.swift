@@ -18,11 +18,49 @@ import SwiftkubeClient
 import SwiftkubeModel
 import Vapor
 import Leaf
+import Metrics
+import Prometheus
+
+struct DeploymentsContext: Encodable {
+	let deployments: [DeploymentModel]
+	let selected = "deployments"
+
+	init(list: apps.v1.DeploymentList) {
+		self.deployments = 	list.items.sorted(by: { (lhs, rhs) in lhs.name! < rhs.name! }).map(\.model)
+	}
+}
+
+struct DeploymentContext: Encodable {
+	let deployment: DeploymentModel
+	let selected = "deployments"
+
+	init(deployment: apps.v1.Deployment) {
+		self.deployment = deployment.model
+	}
+}
+
+struct PodsContext: Encodable {
+	let pods: [PodModel]
+	let selected = "pods"
+
+	init(list: core.v1.PodList) {
+		self.pods = list.items.sorted(by: { (lhs, rhs) in lhs.name! < rhs.name! }).map(\.model)
+	}
+}
+
+struct PodContext: Encodable {
+	let pod: PodModel
+	let selected = "pods"
+
+	init(pod: core.v1.Pod) {
+		self.pod = pod.model
+	}
+}
 
 func routes(_ app: Application) throws {
 
 	app.get { req in
-		req.leaf.render(template: "home", context: [
+		req.view.render("home", [
 			"selected": "none"
 		])
 	}
@@ -32,10 +70,7 @@ func routes(_ app: Application) throws {
 		req.kubernetesClient.appsV1.deployments.list(in: .allNamespaces)
 			.hop(to: req.eventLoop)
 			.flatMap { (deployments: apps.v1.DeploymentList) -> EventLoopFuture<View> in
-				return req.leaf.render(template: "deployments", context: [
-					"deployments": .array(deployments.items.sorted(by: { (lhs, rhs) in lhs.name! < rhs.name! })),
-					"selected": "deployments"
-				])
+				return req.view.render("deployments", DeploymentsContext(list: deployments))
 			}
 	}
 
@@ -46,10 +81,7 @@ func routes(_ app: Application) throws {
 		return req.kubernetesClient.appsV1.deployments.get(in: .namespace(namespace), name: name)
 			.hop(to: req.eventLoop)
 			.flatMap { (deployment: apps.v1.Deployment) -> EventLoopFuture<View> in
-				return req.leaf.render(template: "deployment", context: [
-					"deployment": deployment.leafData,
-					"selected": "deployments"
-				])
+				return req.view.render("deployment", DeploymentContext(deployment: deployment))
 			}
 	}
 
@@ -58,10 +90,7 @@ func routes(_ app: Application) throws {
 		req.kubernetesClient.pods.list(in: .allNamespaces)
 			.hop(to: req.eventLoop)
 			.flatMap { (pods: core.v1.PodList) -> EventLoopFuture<View> in
-				return req.leaf.render(template: "pods", context: [
-					"pods": .array(pods.items.sorted(by: { (lhs, rhs) in lhs.name! < rhs.name! })),
-					"selected": "pods"
-				])
+				return req.view.render("pods", PodsContext(list: pods))
 			}
 	}
 
@@ -72,10 +101,7 @@ func routes(_ app: Application) throws {
 		return req.kubernetesClient.pods.get(in: .namespace(namespace), name: name)
 			.hop(to: req.eventLoop)
 			.flatMap { (pod: core.v1.Pod) -> EventLoopFuture<View> in
-				return req.leaf.render(template: "pod", context: [
-					"pod": pod.leafData,
-					"selected": "pods"
-				])
+				return req.view.render("pod", PodContext(pod: pod))
 			}
 	}
 
@@ -115,9 +141,9 @@ func routes(_ app: Application) throws {
 		let name = req.parameters.get("name")!
 		let container = req.parameters.get("container")!
 
-		let task: HTTPClient.Task<Void>
+		let task: SwiftkubeClientTask
 		do {
-			task = try req.kubernetesClient.pods.follow(in: .namespace(namespace), name: name, container: container) { line in
+			task = try req.kubernetesClient.pods.follow(in: .namespace(namespace), name: name, container: container, retryStrategy: .never) { line in
 				ws.send(line)
 			}
 		} catch let error {
@@ -127,5 +153,11 @@ func routes(_ app: Application) throws {
 		ws.onClose.whenComplete { result in
 			task.cancel()
 		}
+	}
+
+	app.get("metrics") { request -> EventLoopFuture<String> in
+		let promise = request.eventLoop.makePromise(of: String.self)
+		try MetricsSystem.prometheus().collect(into: promise)
+		return promise.futureResult
 	}
 }

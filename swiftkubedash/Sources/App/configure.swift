@@ -48,14 +48,7 @@ extension Request {
 public func configure(_ app: Application) throws {
 
 	app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
-
 	app.initKubernetesClient()
-
-	if !app.environment.isRelease {
-		LeafRenderer.Option.timeout = 100
-		LeafRenderer.Option.caching = .bypass
-	}
-
 	app.views.use(.leaf)
 
 	try routes(app)

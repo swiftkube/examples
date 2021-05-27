@@ -1,4 +1,6 @@
-#define(content):
+#extend("index"):
+
+#export("content"):
 <div id="pod-content" class="card">
 	<header class="card-header">
 		<a href="javascript:history.back()" class="card-header-icon">
@@ -57,6 +59,6 @@
 		</div>
 	</div>
 </div>
-#enddefine
+#endexport
 
-#inline("index")
+#endextend

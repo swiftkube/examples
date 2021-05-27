@@ -18,25 +18,51 @@ import Foundation
 import Leaf
 import SwiftkubeModel
 
-extension apps.v1.Deployment: LeafDataRepresentable {
+struct DeploymentModel: Encodable {
+	let name: String?
+	let namespace: String?
+	let ready: String?
+	let available: String?
+	let age: String?
+	let labels: [String]
+	let selectors: [String]
+}
 
-	public var leafData: LeafData {
-		return .dictionary([
-			"name": name,
-			"namespace": metadata?.namespace,
-			"ready": "\(status?.readyReplicas ?? 0)/\(spec?.replicas ?? 0)",
-			"available": "\(status?.availableReplicas ?? 0)",
-			"age": age(),
-			"labels": labels(),
-			"selectors": selectors()
-		])
+struct PodModel: Encodable {
+	let name: String?
+	let namespace: String?
+	let phase: String?
+	let age: String?
+	let containers: [ContainerModel]
+}
+
+struct ContainerModel: Encodable {
+	let name: String?
+	let image: String?
+	let restartCount: Int32
+	let state: String?
+	let stateColor: String?
+}
+
+extension apps.v1.Deployment {
+
+	var model: DeploymentModel {
+		DeploymentModel(
+			name: name,
+			namespace: metadata?.namespace,
+			ready: "\(status?.readyReplicas ?? 0)/\(spec?.replicas ?? 0)",
+			available: "\(status?.availableReplicas ?? 0)",
+			age: age(),
+			labels: labels(),
+			selectors: selectors()
+		)
 	}
 
 	private func labels() -> [String] {
-		return metadata?.labels?.compactMap { "\($0.key):\($0.value)" } ?? []
+		metadata?.labels?.compactMap { "\($0.key):\($0.value)" } ?? []
 	}
 
-	private func selectors() -> [String]? {
+	private func selectors() -> [String] {
 		let labels = spec?.selector.matchLabels?.compactMap { "\($0.key):\($0.value)" } ?? []
 
 		let expressions = spec?.selector.matchExpressions?.compactMap { exp -> String in
@@ -51,45 +77,43 @@ extension apps.v1.Deployment: LeafDataRepresentable {
 	}
 }
 
-extension core.v1.Pod: LeafDataRepresentable {
+extension core.v1.Pod {
 
-	public var leafData: LeafData {
-
-		return .dictionary([
-			"name": name,
-			"namespace": metadata?.namespace,
-			"phase": status?.phase,
-			"age": age(),
-			"containers": status?.containerStatuses
-		])
+	var model: PodModel {
+		PodModel(
+			name: name,
+			namespace: metadata?.namespace,
+			phase: status?.phase,
+			age: age(),
+			containers: status?.containerStatuses?.compactMap { $0.model } ?? []
+		)
 	}
 }
 
-extension core.v1.ContainerStatus: LeafDataRepresentable {
+extension core.v1.ContainerStatus {
 
-	public var leafData: LeafData {
-
-		return .dictionary([
-			"name": name,
-			"image": image,
-			"restartCount": restartCount,
-			"state": state,
-			"stateColor": state?.stateColor
-		])
+	var model: ContainerModel {
+		ContainerModel(
+			name: name,
+			image: image,
+			restartCount: restartCount,
+			state: state?.statePhase,
+			stateColor: state?.stateColor
+		)
 	}
 }
 
-extension core.v1.ContainerState: LeafDataRepresentable {
+extension core.v1.ContainerState {
 
-	public var leafData: LeafData {
+	var statePhase: String? {
 		if let running = running {
-			return .string("Running since: \(running.startedAt?.description ?? "N/A")")
+			return "Running since: \(running.startedAt?.description ?? "N/A")"
 		} else if let terminated = terminated {
-			return .string("Terminated since: \(terminated.finishedAt?.description ?? "N/A")")
+			return "Terminated since: \(terminated.finishedAt?.description ?? "N/A")"
 		} else if let waiting = waiting {
-			return .string("Waiting: \(waiting.message ?? "N/A")")
+			return "Waiting: \(waiting.message ?? "N/A")"
 		} else {
-			return .trueNil
+			return nil
 		}
 	}
 

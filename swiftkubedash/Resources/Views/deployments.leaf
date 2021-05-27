@@ -1,4 +1,6 @@
-#define(content):
+#extend("index"):
+
+#export("content"):
 <table class="table is-narrow is-striped is-hoverable is-fullwidth">
 	<thead>
 		<tr>
@@ -23,6 +25,6 @@
 		#endfor
 	</tbody>
 </table>
-#enddefine
+#endexport
 
-#inline("index")
+#endextend

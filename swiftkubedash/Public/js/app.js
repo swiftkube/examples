@@ -52,7 +52,7 @@ function followLogs(namespace, pod, container) {
 	socket.onmessage = function (event) {
 		const line = document.createElement("div");
 		line.classList.add("preformatted");
-		line.appendChild(document.createTextNode(event.data));
+		line.textContent = event.data;
 		logs.appendChild(line);
 	};
 }

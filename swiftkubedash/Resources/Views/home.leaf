@@ -1,14 +1,15 @@
-#define(content):
-<article class="message">
-	<div class="message-header">
-		<p>Swiftkube Dash</p>
-	</div>
-	<div class="message-body">
-		A sample demoing <a href="https://github.com/swiftkube">Swiftkube</a> on <a href="https://github.com/vapor">Vapor</a>
-		<br>CSS: <a href="https://github.com/jgthms/bulma">Bulma</a>
-	</div>
-</article>
-#enddefine
+#extend("index"):
 
-#inline("index")
+#export("content"):
+	<article class="message">
+		<div class="message-header">
+			<p>Swiftkube Dash</p>
+		</div>
+		<div class="message-body">
+			A sample demoing <a href="https://github.com/swiftkube">Swiftkube</a> on <a href="https://github.com/vapor">Vapor</a>
+			<br>CSS: <a href="https://github.com/jgthms/bulma">Bulma</a>
+		</div>
+	</article>
+#endexport
 
+#endextend
