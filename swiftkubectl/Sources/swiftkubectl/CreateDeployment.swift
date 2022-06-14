@@ -49,6 +49,10 @@ final class CreateDeploynet: ParsableCommand {
 			throw SwiftkubectlError.configError("Error initializing client")
 		}
 
+		defer {
+			try? client.syncShutdown()
+		}
+
 		let labels = ["app": "swiftkube-c-t-l"]
 
 		// Create the Deployment object using the model closure-based builders

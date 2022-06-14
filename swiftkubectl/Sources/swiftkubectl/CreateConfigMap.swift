@@ -99,6 +99,10 @@ final class CreateConfigMap: ParsableCommand {
 			throw SwiftkubectlError.configError("Error initializing client")
 		}
 
+		defer {
+			try? client.syncShutdown()
+		}
+
 		// Create an empty ConfigMap
 		var configMap = sk.configMap(name: name)
 

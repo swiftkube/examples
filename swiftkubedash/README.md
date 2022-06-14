@@ -39,7 +39,7 @@ $ cd examples/swiftkubedash
 
 ### Locally
 
-If you want to run this locally, then just build the prject and start the executable:
+If you want to run this locally, then just build the project and start the executable:
 
 ```bash
 $ swift build

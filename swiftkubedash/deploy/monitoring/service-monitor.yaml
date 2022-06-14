@@ -1,0 +1,12 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: swiftkube-dash
+  labels:
+    stack: swiftkube
+spec:
+  selector:
+    matchLabels:
+      app: swiftkube-dash
+  endpoints:
+  - port: web

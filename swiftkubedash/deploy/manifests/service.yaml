@@ -2,11 +2,14 @@ apiVersion: v1
 kind: Service
 metadata:
   name: swiftkube-dash
+  labels:
+    app: swiftkube-dash
 spec:
   type: ClusterIP
   selector:
     app: swiftkube-dash
   ports:
-    - protocol: TCP
+    - name: web
+      protocol: TCP
       port: 8080
       targetPort: 8080

@@ -115,11 +115,11 @@ func routes(_ app: Application) throws {
 			return req.eventLoop.makeFailedFuture(Abort(.custom(code: 400, reasonPhrase: "Payload is not a valid manifest")))
 		}
 
-		guard let gvk = try? GroupVersionKind(for: "\(resource.apiVersion)/\(resource.kind)") else {
+		guard let gvr = GroupVersionResource(for: resource.kind) else {
 			return req.eventLoop.makeFailedFuture(Abort(.custom(code: 400, reasonPhrase: "Unknown resource: \(resource.apiVersion)/\(resource.kind)")))
 		}
 
-		return req.kubernetesClient.for(gvk: gvk).create(in: .namespace(namespace), resource)
+		return req.kubernetesClient.for(gvr: gvr).create(in: .namespace(namespace), resource)
 				.flatMapError { error in
 					if case let SwiftkubeClientError.requestError(status) = error {
 						let abort = Abort(.custom(code: UInt(status.code!), reasonPhrase: status.message!))

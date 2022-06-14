@@ -39,6 +39,10 @@ final class Apply: ParsableCommand {
 			throw SwiftkubectlError.configError("Error initializing client")
 		}
 
+		defer {
+			try? client.syncShutdown()
+		}
+
 		let url = URL(fileURLWithPath: file)
 		let yaml = try String(contentsOf: url)
 
@@ -58,36 +62,36 @@ final class Apply: ParsableCommand {
 	}
 
 	private func applyResource(client: KubernetesClient, resource: AnyKubernetesAPIResource) {
-		guard let gvk = try? GroupVersionKind(for: "\(resource.apiVersion)/\(resource.kind)") else {
+		guard let gvr = GroupVersionResource(for: resource.kind) else {
 			print("Unknown Kubernetes resource [\(resource.apiVersion)/\(resource.kind)]")
 			return
 		}
 
 		guard let name = resource.metadata?.name else {
-			print("Skipping resource of type [\(gvk.rawValue)], because it doesn't define a name.")
+			print("Skipping resource of type [\(gvr.resource)], because it doesn't define a name.")
 			return
 		}
 
 		guard let namespace = resource.metadata?.namespace else {
-			print("Skipping resource [\(gvk.rawValue)/\(name)], because it doesn't define a namespace.")
+			print("Skipping resource [\(gvr.resource)/\(name)], because it doesn't define a namespace.")
 			return
 		}
 
 		let namespaceSelector = NamespaceSelector.namespace(namespace)
-		let genericClient = client.for(gvk: gvk)
+		let genericClient = client.for(gvr: gvr)
 
 		// Load the resource
 		let _ = try? genericClient.get(in: namespaceSelector, name: name)
 			.flatMap { existing -> EventLoopFuture<AnyKubernetesAPIResource> in
 				// if it exists, then update it
 				let res = genericClient.update(in: namespaceSelector, resource)
-				print("Resource [\(gvk.rawValue)/\(name)] updated in namespace: \(namespace)")
+				print("Resource [\(gvr.resource)/\(name)] updated in namespace: \(namespace)")
 				return res
 			}
 			.flatMapError { error -> EventLoopFuture<AnyKubernetesAPIResource> in
 				// if it doesn't exist yet, then create it
 				let res = genericClient.create(in: namespaceSelector, resource)
-				print("Resource [\(gvk.rawValue)/\(name)] created in namespace: \(namespace)")
+				print("Resource [\(gvr.resource)/\(name)] created in namespace: \(namespace)")
 				return res
 			}
 			.wait()
