@@ -58,7 +58,7 @@ struct FileKeyValue {
 	}
 }
 
-final class CreateConfigMap: ParsableCommand {
+final class CreateConfigMap: AsyncParsableCommand {
 
 	public static let configuration = CommandConfiguration(
 		commandName: "configmap",
@@ -93,7 +93,7 @@ final class CreateConfigMap: ParsableCommand {
 	)
 	var files: [FileKeyValue] = []
 
-	func run() throws {
+	func run() async throws {
 		// Initialize a new KubernetesClient
 		guard let client = KubernetesClient() else {
 			throw SwiftkubectlError.configError("Error initializing client")
@@ -119,7 +119,7 @@ final class CreateConfigMap: ParsableCommand {
 		}
 
 		// Create the ConfigMap in the given namespace
-		let res = try client.configMaps.create(inNamespace: .namespace(namespace ?? client.config.namespace), configMap).wait()
+		let res = try await client.configMaps.create(inNamespace: .namespace(namespace ?? client.config.namespace), configMap)
 		print("ConfigMap \(name) created in namespace \(res.metadata!.namespace!)")
 	}
 }

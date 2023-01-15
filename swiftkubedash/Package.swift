@@ -1,4 +1,4 @@
-// swift-tools-version:5.2
+// swift-tools-version:5.5
 import PackageDescription
 
 let package = Package(
@@ -7,10 +7,10 @@ let package = Package(
 		.macOS(.v10_15)
 	],
 	dependencies: [
-		.package(name: "SwiftkubeClient", url: "https://github.com/swiftkube/client.git", from: "0.11.0"),
-		.package(url: "https://github.com/vapor/vapor.git", from: "4.61.1"),
-		.package(url: "https://github.com/vapor/leaf", from: "4.2.0"),
-		.package(url: "https://github.com/MrLotU/SwiftPrometheus.git", from: "1.0.0-alpha.15")
+		.package(name: "SwiftkubeClient", url: "https://github.com/swiftkube/client.git", from: "0.12.0"),
+		.package(url: "https://github.com/vapor/vapor.git", from: "4.68.0"),
+		.package(url: "https://github.com/vapor/leaf", from: "4.2.4"),
+		.package(url: "https://github.com/MrLotU/SwiftPrometheus.git", from: "1.0.1")
 	],
 	targets: [
 		.target(
@@ -25,6 +25,11 @@ let package = Package(
 				.unsafeFlags(["-cross-module-optimization"], .when(configuration: .release))
 			]
 		),
-		.target(name: "Run", dependencies: [.target(name: "App")])
+		.executableTarget(
+			name: "Run",
+			dependencies: [
+				.target(name: "App")
+			]
+		)
 	]
 )

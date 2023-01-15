@@ -25,16 +25,15 @@ enum SwiftkubectlError: Error {
 	case clientError(Error)
 }
 
-struct Swiftkubectl: ParsableCommand {
+@main
+struct Swiftkubectl: AsyncParsableCommand {
 	static let configuration = CommandConfiguration(
 		abstract: "Swiftkube-c-t-l",
 		discussion: """
 			An example kubernetes cli using SwiftkubeClient implementing
 			a tiny subset of the functionality for demo purposes.
 			""",
-		subcommands: [Apply.self, Get.self, Create.self]
+		subcommands: [Apply.self, Get.self, Create.self, ServerVersion.self, APIVersions.self, APIResources.self]
 	)
 	init() {}
 }
-
-Swiftkubectl.main()

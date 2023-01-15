@@ -65,75 +65,57 @@ func routes(_ app: Application) throws {
 		])
 	}
 
-	app.get("deployments") { req in
-
-		req.kubernetesClient.appsV1.deployments.list(in: .allNamespaces)
-			.hop(to: req.eventLoop)
-			.flatMap { (deployments: apps.v1.DeploymentList) -> EventLoopFuture<View> in
-				return req.view.render("deployments", DeploymentsContext(list: deployments))
-			}
+	app.get("deployments") { req async throws -> View in
+		let deployments = try await req.kubernetesClient.appsV1.deployments.list(in: .allNamespaces)
+		return try await req.view.render("deployments", DeploymentsContext(list: deployments))
 	}
 
-	app.get("deployments", ":namespace", ":name") { req -> EventLoopFuture<View> in
+	app.get("deployments", ":namespace", ":name") { req async throws -> View in
 		let namespace = req.parameters.get("namespace")!
 		let name = req.parameters.get("name")!
 
-		return req.kubernetesClient.appsV1.deployments.get(in: .namespace(namespace), name: name)
-			.hop(to: req.eventLoop)
-			.flatMap { (deployment: apps.v1.Deployment) -> EventLoopFuture<View> in
-				return req.view.render("deployment", DeploymentContext(deployment: deployment))
-			}
+		let deployment = try await req.kubernetesClient.appsV1.deployments.get(in: .namespace(namespace), name: name)
+		return try await req.view.render("deployment", DeploymentContext(deployment: deployment))
 	}
 
-	app.get("pods") { req in
-
-		req.kubernetesClient.pods.list(in: .allNamespaces)
-			.hop(to: req.eventLoop)
-			.flatMap { (pods: core.v1.PodList) -> EventLoopFuture<View> in
-				return req.view.render("pods", PodsContext(list: pods))
-			}
+	app.get("pods") { req async throws -> View in
+		let pods = try await req.kubernetesClient.pods.list(in: .allNamespaces)
+		return try await req.view.render("pods", PodsContext(list: pods))
 	}
 
-	app.get("pods", ":namespace", ":name") { req -> EventLoopFuture<View> in
+	app.get("pods", ":namespace", ":name") { req async throws -> View in
 		let namespace = req.parameters.get("namespace")!
 		let name = req.parameters.get("name")!
 
-		return req.kubernetesClient.pods.get(in: .namespace(namespace), name: name)
-			.hop(to: req.eventLoop)
-			.flatMap { (pod: core.v1.Pod) -> EventLoopFuture<View> in
-				return req.view.render("pod", PodContext(pod: pod))
-			}
+		let pod = try await req.kubernetesClient.pods.get(in: .namespace(namespace), name: name)
+		return try await req.view.render("pod", PodContext(pod: pod))
 	}
 
-	app.post("namespace", ":namespace") { req -> EventLoopFuture<Response> in
+	app.post("namespace", ":namespace") { req async throws -> Response in
 		let namespace = req.parameters.get("namespace")!
 		guard let payload = req.body.string else {
-			return req.eventLoop.makeFailedFuture(Abort(.custom(code: 400, reasonPhrase: "Empty payload")))
+			throw Abort(.custom(code: 400, reasonPhrase: "Empty payload"))
 		}
 
 		guard let resource = try? AnyKubernetesAPIResource.load(yaml: payload).first else {
-			return req.eventLoop.makeFailedFuture(Abort(.custom(code: 400, reasonPhrase: "Payload is not a valid manifest")))
+			throw Abort(.custom(code: 400, reasonPhrase: "Payload is not a valid manifest"))
 		}
 
 		guard let gvr = GroupVersionResource(for: resource.kind) else {
-			return req.eventLoop.makeFailedFuture(Abort(.custom(code: 400, reasonPhrase: "Unknown resource: \(resource.apiVersion)/\(resource.kind)")))
+			throw Abort(.custom(code: 400, reasonPhrase: "Unknown resource: \(resource.apiVersion)/\(resource.kind)"))
 		}
 
-		return req.kubernetesClient.for(gvr: gvr).create(in: .namespace(namespace), resource)
-				.flatMapError { error in
-					if case let SwiftkubeClientError.requestError(status) = error {
-						let abort = Abort(.custom(code: UInt(status.code!), reasonPhrase: status.message!))
-						return req.eventLoop.makeFailedFuture(abort)
-					}
+		do {
+			let resource = try await req.kubernetesClient.for(gvr: gvr).create(in: .namespace(namespace), resource)
+			let data = try! JSONEncoder().encode(resource)
+			return Response(status: .created, body: Response.Body(data: data))
+		} catch let error {
+			if case let SwiftkubeClientError.statusError(status) = error {
+				throw Abort(.custom(code: UInt(status.code!), reasonPhrase: status.message!))
+			}
 
-					let abort = Abort(.custom(code: 500, reasonPhrase: error.localizedDescription))
-					return req.eventLoop.makeFailedFuture(abort)
-				}
-				.hop(to: req.eventLoop)
-				.map { resource in
-					let data = try! JSONEncoder().encode(resource)
-					return Response(status: .created, body: Response.Body(data: data))
-				}
+			throw Abort(.custom(code: 500, reasonPhrase: error.localizedDescription))
+		}
 	}
 
 	app.webSocket("logs", ":namespace", ":name", ":container") { req, ws in

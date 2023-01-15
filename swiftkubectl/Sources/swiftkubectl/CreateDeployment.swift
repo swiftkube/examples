@@ -20,7 +20,7 @@ import NIO
 import SwiftkubeModel
 import SwiftkubeClient
 
-final class CreateDeploynet: ParsableCommand {
+final class CreateDeploynet: AsyncParsableCommand {
 
 	public static let configuration = CommandConfiguration(
 		commandName: "deployment",
@@ -43,7 +43,7 @@ final class CreateDeploynet: ParsableCommand {
 	)
 	var image: String
 
-	func run() throws {
+	func run() async throws {
 		// Initialize a new KubernetesClient
 		guard let client = KubernetesClient() else {
 			throw SwiftkubectlError.configError("Error initializing client")
@@ -76,7 +76,7 @@ final class CreateDeploynet: ParsableCommand {
 		}
 
 		// Create the Deployment in the given namespace
-		let res = try client.appsV1.deployments.create(inNamespace: .namespace(namespace ?? client.config.namespace), deployment).wait()
+		let res = try await client.appsV1.deployments.create(inNamespace: .namespace(namespace ?? client.config.namespace), deployment)
 		print("Deployment \(name) created in namespace \(res.metadata!.namespace!)")
 	}
 }

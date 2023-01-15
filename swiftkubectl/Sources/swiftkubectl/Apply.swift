@@ -21,7 +21,7 @@ import SwiftkubeModel
 import SwiftkubeClient
 import Yams
 
-final class Apply: ParsableCommand {
+final class Apply: AsyncParsableCommand {
 
 	public static let configuration = CommandConfiguration(
 		abstract: "Apply a configuration to a resource by filename."
@@ -33,7 +33,7 @@ final class Apply: ParsableCommand {
 	)
 	var file: String
 
-	func run() throws {
+	func run() async throws {
 		// Initialize a new KubernetesClient
 		guard let client = KubernetesClient() else {
 			throw SwiftkubectlError.configError("Error initializing client")
@@ -58,10 +58,12 @@ final class Apply: ParsableCommand {
 				return try decoder.decode(AnyKubernetesAPIResource.self, from: resourceYAML)
 			}
 
-		resources.forEach { applyResource(client: client, resource: $0) }
+		for resouce in resources {
+			try await applyResource(client: client, resource: resouce)
+		}
 	}
 
-	private func applyResource(client: KubernetesClient, resource: AnyKubernetesAPIResource) {
+	private func applyResource(client: KubernetesClient, resource: AnyKubernetesAPIResource) async throws {
 		guard let gvr = GroupVersionResource(for: resource.kind) else {
 			print("Unknown Kubernetes resource [\(resource.apiVersion)/\(resource.kind)]")
 			return
@@ -81,19 +83,15 @@ final class Apply: ParsableCommand {
 		let genericClient = client.for(gvr: gvr)
 
 		// Load the resource
-		let _ = try? genericClient.get(in: namespaceSelector, name: name)
-			.flatMap { existing -> EventLoopFuture<AnyKubernetesAPIResource> in
-				// if it exists, then update it
-				let res = genericClient.update(in: namespaceSelector, resource)
-				print("Resource [\(gvr.resource)/\(name)] updated in namespace: \(namespace)")
-				return res
-			}
-			.flatMapError { error -> EventLoopFuture<AnyKubernetesAPIResource> in
-				// if it doesn't exist yet, then create it
-				let res = genericClient.create(in: namespaceSelector, resource)
-				print("Resource [\(gvr.resource)/\(name)] created in namespace: \(namespace)")
-				return res
-			}
-			.wait()
+		do {
+			let resource = try await genericClient.get(in: namespaceSelector, name: name)
+			// if it exists, then update it
+			let _ = try await genericClient.update(in: namespaceSelector, resource)
+			print("Resource [\(gvr.resource)/\(name)] updated in namespace: \(namespace)")
+		} catch {
+			// if it doesn't exist yet, then create it
+			let _ = try await genericClient.create(in: namespaceSelector, resource)
+			print("Resource [\(gvr.resource)/\(name)] created in namespace: \(namespace)")
+		}
 	}
 }
