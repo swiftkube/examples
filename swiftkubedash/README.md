@@ -2,7 +2,7 @@
 
 <p align="center">
 	<img src="https://img.shields.io/badge/Swift-5.5-orange.svg" />
-	<img src="https://img.shields.io/badge/SwiftkubeClient-0.12.0-blue.svg" />
+	<img src="https://img.shields.io/badge/SwiftkubeClient-0.13.0-blue.svg" />
 	<img src="https://img.shields.io/badge/platforms-mac+linux-brightgreen.svg?style=flat" alt="Mac + Linux" />
 </p>
 
@@ -66,7 +66,7 @@ You can deploy the docker image in Kubernetes. The app will configure itself wit
 
 You can apply the manifests in the `deploy` folder:
 
-:warning: If you deploy in any namespace other than `default`, then you have to change the subject's namesace in 
+:warning: If you deploy in any namespace other than `default`, then you have to change the subject's namespace in 
 the [ClusterRoleBinding](./deploy/rbac.yaml)
 
 ```bash

@@ -97,7 +97,7 @@ func routes(_ app: Application) throws {
 			throw Abort(.custom(code: 400, reasonPhrase: "Empty payload"))
 		}
 
-		guard let resource = try? AnyKubernetesAPIResource.load(yaml: payload).first else {
+		guard let resource = try? UnstructuredResource.load(yaml: payload).first else {
 			throw Abort(.custom(code: 400, reasonPhrase: "Payload is not a valid manifest"))
 		}
 
@@ -118,22 +118,23 @@ func routes(_ app: Application) throws {
 		}
 	}
 
-	app.webSocket("logs", ":namespace", ":name", ":container") { req, ws in
+	app.webSocket("logs", ":namespace", ":name", ":container") { req, ws async in
 		let namespace = req.parameters.get("namespace")!
 		let name = req.parameters.get("name")!
 		let container = req.parameters.get("container")!
 
-		let task: SwiftkubeClientTask
 		do {
-			task = try req.kubernetesClient.pods.follow(in: .namespace(namespace), name: name, container: container, retryStrategy: .never) { line in
-				ws.send(line)
+			let task = try req.kubernetesClient.pods.follow(in: .namespace(namespace), name: name, container: container, retryStrategy: .never)
+
+			ws.onClose.whenComplete { result in
+				task.cancel()
+			}
+
+			for try await line in task.start() {
+				await ws.send(line)
 			}
 		} catch let error {
-			return ws.send(error.localizedDescription)
-		}
-
-		ws.onClose.whenComplete { result in
-			task.cancel()
+			return try await ws.send(error.localizedDescription)
 		}
 	}
 

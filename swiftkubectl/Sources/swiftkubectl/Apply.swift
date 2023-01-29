@@ -52,18 +52,18 @@ final class Apply: AsyncParsableCommand {
 		// YAMS's `load_all` return a sequnence of `Any` and `compose_all` returns a sequence of `Node`
 		// hence the compose -> serialize -> decode workaround
 		// in order to get a list of type-erased `AnyKubernetesAPIResources`
-		let resources: [AnyKubernetesAPIResource] = try Yams.compose_all(yaml: yaml)
-			.map { node -> AnyKubernetesAPIResource in
+		let resources: [UnstructuredResource] = try Yams.compose_all(yaml: yaml)
+			.map { node -> UnstructuredResource in
 				let resourceYAML = try Yams.serialize(node: node)
-				return try decoder.decode(AnyKubernetesAPIResource.self, from: resourceYAML)
+				return try decoder.decode(UnstructuredResource.self, from: resourceYAML)
 			}
 
-		for resouce in resources {
-			try await applyResource(client: client, resource: resouce)
+		for resource in resources {
+			try await applyResource(client: client, resource: resource)
 		}
 	}
 
-	private func applyResource(client: KubernetesClient, resource: AnyKubernetesAPIResource) async throws {
+	private func applyResource(client: KubernetesClient, resource: UnstructuredResource) async throws {
 		guard let gvr = GroupVersionResource(for: resource.kind) else {
 			print("Unknown Kubernetes resource [\(resource.apiVersion)/\(resource.kind)]")
 			return

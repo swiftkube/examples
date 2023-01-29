@@ -64,10 +64,11 @@ struct Get: AsyncParsableCommand {
 			throw SwiftkubectlError.configError("A resource cannot be retrieved by name across all namespaces")
 		}
 
-		let namespaceSelector = resolveNamespace() ?? NamespaceSelector.namespace(client.config.namespace)
-
 		// Determine the GroupVersionResource
-		let gvr = try await determineGVR(client: client, kind: kind)
+		let (gvr, namespaced) = try await resolveResourceInfo(client: client, kind: kind)
+		let namespaceSelector = namespaced
+			? (resolveNamespace() ?? NamespaceSelector.namespace(client.config.namespace))
+			: .allNamespaces
 
 		// Get or List resources
 		let resources: [MetadataHavingResource]
@@ -83,26 +84,28 @@ struct Get: AsyncParsableCommand {
 		}
 
 		// Print results
-		output(resources: resources, gvr: gvr)
+		output(resources: resources, gvr: gvr, namespaced: namespaced)
 	}
 
-	private func determineGVR(client: KubernetesClient, kind: String) async throws -> GroupVersionResource {
+	private func resolveResourceInfo(client: KubernetesClient, kind: String) async throws -> (gvr: GroupVersionResource, namespaced: Bool) {
 		if let gvr = GroupVersionResource(for: kind) {
-			return gvr
+			return (gvr, gvr.namespaced)
 		}
 
-		let lowercasedKind = kind.lowercased()
+		let lowercaseKind = kind.lowercased()
 
 		let predicate: (meta.v1.APIResource) -> Bool = { resource in
-			resource.name.lowercased() == lowercasedKind ||
-				resource.shortNames?.contains(lowercasedKind) ?? false ||
-				resource.kind.lowercased() == lowercasedKind
+			resource.name.lowercased() == lowercaseKind ||
+				resource.shortNames?.contains(lowercaseKind) ?? false ||
+				resource.kind.lowercased() == lowercaseKind
 		}
 
 		let resourceList = try await findResourceList(client: client, predicate: predicate)
-		let name = resourceList.resources.first(where: predicate)!.name
+		let resource = resourceList.resources.first(where: predicate)!
+		let name = resource.name
+		let namespaced = resource.namespaced
 
-		return GroupVersionResource(apiVersion: resourceList.groupVersion, resource: name)!
+		return (GroupVersionResource(apiVersion: resourceList.groupVersion, resource: name)!, namespaced)
 	}
 
 	private func findResourceList(client: KubernetesClient, predicate: (meta.v1.APIResource) -> Bool) async throws -> meta.v1.APIResourceList {
@@ -132,7 +135,7 @@ struct Get: AsyncParsableCommand {
 
 	private func getResource(_ client: KubernetesClient, gvr: GroupVersionResource, in namespaceSelector: NamespaceSelector, name: String) async throws -> [MetadataHavingResource] {
 		// Use a generic client for the given GroupVersionResource
-		let resource = try await client.unstructuredFor(gvr: gvr).get(in: gvr.namespaced ? namespaceSelector : .allNamespaces, name: name)
+		let resource = try await client.for(gvr: gvr).get(in: namespaceSelector, name: name)
 
 		if resource.apiVersion == "v1", resource.kind == "Status" {
 			return []
@@ -143,7 +146,7 @@ struct Get: AsyncParsableCommand {
 
 	private func listResources(_ client: KubernetesClient, gvr: GroupVersionResource, in namespaceSelector: NamespaceSelector) async throws -> [MetadataHavingResource] {
 		// Use a generic client for the given GroupVersionKind
-		return try await client.for (gvr: gvr).list(in: gvr.namespaced ? namespaceSelector : .allNamespaces).items
+		return try await client.for (gvr: gvr).list(in: namespaceSelector).items
 	}
 
 	private func resolveNamespace() -> NamespaceSelector? {
@@ -158,11 +161,11 @@ struct Get: AsyncParsableCommand {
 	}
 
 	// Sample output
-	private func output(resources: [MetadataHavingResource], gvr: GroupVersionResource) {
+	private func output(resources: [MetadataHavingResource], gvr: GroupVersionResource, namespaced: Bool) {
 		let formatter = ISO8601DateFormatter()
 		formatter.formatOptions = .withInternetDateTime
 
-		if gvr.namespaced {
+		if namespaced {
 			print(
 				"NAME".padding(toLength: 24, withPad: " ", startingAt: 0),
 				"NAMESPACE".padding(toLength: 24, withPad: " ", startingAt: 0),
