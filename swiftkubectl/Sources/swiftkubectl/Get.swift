@@ -71,7 +71,7 @@ struct Get: AsyncParsableCommand {
 			: .allNamespaces
 
 		// Get or List resources
-		let resources: [MetadataHavingResource]
+		let resources: [any MetadataHavingResource]
 		if let name = name {
 			resources = try await getResource(client, gvr: gvr, in: namespaceSelector, name: name)
 		} else {
@@ -133,7 +133,7 @@ struct Get: AsyncParsableCommand {
 		}
 	}
 
-	private func getResource(_ client: KubernetesClient, gvr: GroupVersionResource, in namespaceSelector: NamespaceSelector, name: String) async throws -> [MetadataHavingResource] {
+	private func getResource(_ client: KubernetesClient, gvr: GroupVersionResource, in namespaceSelector: NamespaceSelector, name: String) async throws -> [any MetadataHavingResource] {
 		// Use a generic client for the given GroupVersionResource
 		let resource = try await client.for(gvr: gvr).get(in: namespaceSelector, name: name)
 
@@ -144,7 +144,7 @@ struct Get: AsyncParsableCommand {
 		return [resource]
 	}
 
-	private func listResources(_ client: KubernetesClient, gvr: GroupVersionResource, in namespaceSelector: NamespaceSelector) async throws -> [MetadataHavingResource] {
+	private func listResources(_ client: KubernetesClient, gvr: GroupVersionResource, in namespaceSelector: NamespaceSelector) async throws -> [any MetadataHavingResource] {
 		// Use a generic client for the given GroupVersionKind
 		return try await client.for (gvr: gvr).list(in: namespaceSelector).items
 	}
@@ -161,7 +161,7 @@ struct Get: AsyncParsableCommand {
 	}
 
 	// Sample output
-	private func output(resources: [MetadataHavingResource], gvr: GroupVersionResource, namespaced: Bool) {
+	private func output(resources: [any MetadataHavingResource], gvr: GroupVersionResource, namespaced: Bool) {
 		let formatter = ISO8601DateFormatter()
 		formatter.formatOptions = .withInternetDateTime
 
