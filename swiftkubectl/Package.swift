@@ -9,8 +9,7 @@ let package = Package(
 		.macOS(.v12)
 	],
 	dependencies: [
-//		.package(name: "SwiftkubeClient", url: "https://github.com/swiftkube/client.git", from: "0.14.0"),
-		.package(url: "../../client", branch: "main"),
+		.package(url: "https://github.com/swiftkube/client.git", from: "0.20.0"),
 		.package(url: "https://github.com/apple/swift-argument-parser", from: "1.5.0")
 	],
 	targets: [
