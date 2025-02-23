@@ -18,6 +18,7 @@ import ArgumentParser
 import NIO
 import SwiftkubeModel
 import SwiftkubeClient
+import Foundation
 
 enum SwiftkubectlError: Error {
 	case commandError(String)

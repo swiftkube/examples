@@ -124,23 +124,49 @@ func routes(_ app: Application) throws {
 		let container = req.parameters.get("container")!
 
 		do {
-			let task = try req.kubernetesClient.pods.follow(in: .namespace(namespace), name: name, container: container, retryStrategy: .never)
+			let task = try await req.kubernetesClient.pods.follow(
+				in: .namespace(namespace),
+				name: name,
+				container: container,
+				retryStrategy: .never
+			)
 
 			ws.onClose.whenComplete { result in
-				task.cancel()
+				Task { await task.cancel() }
 			}
 
-			for try await line in task.start() {
-				await ws.send(line)
+			for try await line in await task.start() {
+				try await ws.send(line)
 			}
 		} catch let error {
-			return try await ws.send(error.localizedDescription)
+			try? await ws.send(error.localizedDescription)
 		}
 	}
 
 	app.get("metrics") { request -> EventLoopFuture<String> in
 		let promise = request.eventLoop.makePromise(of: String.self)
-		try MetricsSystem.prometheus().collect(into: promise)
+		let metrics = try MetricsSystem.prometheus.emit()
+		promise.succeed(metrics)
 		return promise.futureResult
 	}
 }
+
+extension MetricsSystem {
+	static var prometheus: PrometheusMetricsFactory {
+		get throws {
+			guard let factory = Self.factory as? PrometheusMetricsFactory else {
+				throw Abort(.internalServerError, reason: "Metrics factory is not Prometheus")
+			}
+			return factory
+		}
+	}
+}
+
+extension PrometheusMetricsFactory {
+	func emit() -> String {
+		var buffer = [UInt8]()
+		self.registry.emit(into: &buffer)
+		return String(bytes: buffer, encoding: .utf8) ?? ""
+	}
+}
+

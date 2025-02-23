@@ -20,7 +20,7 @@ import Leaf
 
 extension Application {
 
-	private struct SwiftkubeClientKey: StorageKey {
+	private struct SwiftkubeClientKey: StorageKey, Sendable {
 		typealias Value = KubernetesClient
 	}
 

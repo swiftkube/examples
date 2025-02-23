@@ -1,35 +1,30 @@
-// swift-tools-version:5.5
+// swift-tools-version: 5.9
 import PackageDescription
 
 let package = Package(
 	name: "SwiftkubeDash",
 	platforms: [
-		.macOS(.v10_15)
+		.macOS(.v13)
 	],
 	dependencies: [
-		.package(name: "SwiftkubeClient", url: "https://github.com/swiftkube/client.git", from: "0.13.0"),
-		.package(url: "https://github.com/vapor/vapor.git", from: "4.68.0"),
-		.package(url: "https://github.com/vapor/leaf", from: "4.2.4"),
-		.package(url: "https://github.com/MrLotU/SwiftPrometheus.git", from: "1.0.1")
+//		.package(url: "https://github.com/swiftkube/client.git", from: "0.20.0"),
+		.package(url: "../../client", branch: "main"),
+		.package(url: "https://github.com/vapor/vapor.git", from: "4.113.2"),
+		.package(url: "https://github.com/vapor/leaf", from: "4.4.1"),
+		.package(url: "https://github.com/swift-server/swift-prometheus", from: "2.0.0")
 	],
 	targets: [
-		.target(
+		.executableTarget(
 			name: "App",
 			dependencies: [
-				.product(name: "SwiftkubeClient", package: "SwiftkubeClient"),
+				.product(name: "SwiftkubeClient", package: "client"),
 				.product(name: "Vapor", package: "vapor"),
 				.product(name: "Leaf", package: "leaf"),
-				.product(name: "SwiftPrometheus", package: "SwiftPrometheus"),
+				.product(name: "Prometheus", package: "swift-prometheus"),
 			],
 			swiftSettings: [
 				.unsafeFlags(["-cross-module-optimization"], .when(configuration: .release))
 			]
 		),
-		.executableTarget(
-			name: "Run",
-			dependencies: [
-				.target(name: "App")
-			]
-		)
 	]
 )
