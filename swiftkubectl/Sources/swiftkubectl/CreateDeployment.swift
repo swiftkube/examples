@@ -76,7 +76,8 @@ final class CreateDeploynet: AsyncParsableCommand {
 		}
 
 		// Create the Deployment in the given namespace
-		let res = try await client.appsV1.deployments.create(inNamespace: .namespace(namespace ?? client.config.namespace), deployment)
+		let namespaceSelector = namespace.map { NamespaceSelector.namespace($0) }
+		let res = try await client.appsV1.deployments.create(inNamespace: namespaceSelector, deployment)
 		print("Deployment \(name) created in namespace \(res.metadata!.namespace!)")
 	}
 }

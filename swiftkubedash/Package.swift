@@ -7,7 +7,7 @@ let package = Package(
 		.macOS(.v13)
 	],
 	dependencies: [
-		.package(url: "https://github.com/swiftkube/client.git", from: "0.20.0"),
+		.package(url: "https://github.com/swiftkube/client.git", from: "0.22.0"),
 		.package(url: "https://github.com/vapor/vapor.git", from: "4.113.2"),
 		.package(url: "https://github.com/vapor/leaf", from: "4.4.1"),
 		.package(url: "https://github.com/swift-server/swift-prometheus", from: "2.0.0")
